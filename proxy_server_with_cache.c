@@ -22,7 +22,7 @@
 #define MAX_ELEMENT_SIZE 10*(1<<20)     //max size of an element in cache
 
 typedef struct cache_element cache_element;
-
+int x = 23;
 struct cache_element{
     char* data;         //data stores response
     int len;          //length of data i.e.. sizeof(data)...
