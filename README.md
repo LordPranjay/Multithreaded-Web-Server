@@ -4,7 +4,7 @@ A simple multithreaded HTTP proxy server written in **C**. This project intercep
 
 ---
 
-## 🎯 Motivation & Need of Project
+## Motivation & Need of Project
 
 To Understand →
 
@@ -22,7 +22,7 @@ Proxy Server does →
 
 ---
 
-## 🚀 Features
+## Features
 
 - **Intercepts & Forwards** HTTP/1.0 and HTTP/1.1 requests between clients and origin servers
 - **Thread-per-Connection** model using **POSIX threads (pthread)** for handling multiple simultaneous clients
@@ -34,7 +34,7 @@ Proxy Server does →
 
 ---
 
-## 🛠 Tech Stack, Libraries & CS Fundamentals used
+## Tech Stack, Libraries & CS Fundamentals used
 
 - **C** (C11)
 - **POSIX Threads** (`pthread`)
@@ -46,7 +46,7 @@ Proxy Server does →
 
 ---
 
-## 📥 Getting Started
+## Getting Started
 
 ### Prerequisites
 
@@ -85,24 +85,20 @@ Configure your browser or client to use `localhost:8080` as the HTTP proxy.
 
 ---
 
-flowchart TD
-    A[Accept Connections<br/>(Main thread listens on accept())]
-    B[Spawn Worker<br/>(Detached pthread for each client)]
-    C[Parse Request<br/>(Fill ParsedRequest struct)]
-    D[Cache Lookup<br/>(Check under mutex lock)]
-    E[Cache Hit?<br/>]
-    F[Serve from Cache<br/>(Send cached response)]
-    G[Forward on Miss<br/>(Connect to origin, get response)]
-    H[Cache Store<br/>(If response size ≤ MAX_ELEMENT_SIZE)]
-    I[Cleanup<br/>(Close socket, thread exits)]
+## Execution Flow Diagram
 
-    A --> B --> C --> D --> E
-    E -- Yes --> F --> I
-    E -- No --> G --> H --> I
+1. **Accept Connections**: The main thread sets up a listening socket and loops on `accept()`.
+2. **Spawn Worker**: For each new client, a detached `pthread` is created to handle the session.
+3. **Parse Request**: The worker reads the request buffer and uses the `proxy_parse` module to fill a `ParsedRequest` struct.
+4. **Cache Lookup**: If caching is enabled, the URL is looked up in the LRU cache under a mutex lock. On a hit, the cached response is sent immediately.
+5. **Forward on Miss**: On a miss, the proxy opens a connection to the origin server, forwards the request, reads the response, and writes it back to the client.
+6. **Cache Store**: If response size ≤ `MAX_ELEMENT_SIZE`, the data and URL are copied into a new `cache_element`, inserted at the head of the LRU list, and old entries are evicted to maintain total `MAX_SIZE`.
+7. **Cleanup**: The client socket is closed and the worker thread exits.
 
+![alt text](image.png)
 ---
 
-## 🛠 Troubleshooting & Tips
+## Troubleshooting & Tips
 
 - **Address already in use**: Ensure no other process is bound to your port, or enable `SO_REUSEADDR` in the code
 - **Cache thrashing**: Adjust `MAX_SIZE` and `MAX_ELEMENT_SIZE` to fit your response sizes
