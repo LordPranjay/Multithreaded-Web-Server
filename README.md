@@ -1,4 +1,4 @@
-# MultiThreaded Proxy Server in C
+# MultiThreaded Proxy Server with and without cache
 
 A simple multithreaded HTTP proxy server written in **C**. This project intercepts client HTTP requests, forwards them to target servers, and optionally caches responses in memory using an LRU (Least Recently Used) eviction policy. It leverages **POSIX threads**, **Linux sockets**, and a HTTP parsing module.
 
@@ -52,14 +52,13 @@ Proxy Server does →
 
 - A Linux environment (Ubuntu, Debian, Fedora, etc.) or **Windows Subsystem for Linux (WSL)**
 - GCC or compatible C compiler
-- `make`
 
 ### Clone & Build
 
 ```bash
-git clone https://github.com/YourUsername/MultiThreadedProxy.git
-cd MultiThreadedProxy
-make
+git clone https://github.com/LordPranjay/Multithreaded-Web-Server.git
+cd Multithreaded-Web-Server
+make all
 ```
 
 This produces the executable `proxy` in the project root.
@@ -102,6 +101,8 @@ Configure your browser or client to use `localhost:8080` as the HTTP proxy.
 
 - **Address already in use**: Ensure no other process is bound to your port, or enable `SO_REUSEADDR` in the code
 - **Cache thrashing**: Adjust `MAX_SIZE` and `MAX_ELEMENT_SIZE` to fit your response sizes
+- This code can be run only in a Linux environment
+- Disable your browser cache before running the code
 
 
 
