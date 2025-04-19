@@ -50,7 +50,8 @@ int cache_size;             //cache_size denotes the current size of the cache
 int connectRemoteServer(char* host_addr, int port_num)
 {
 	// Creating Socket for remote server ---------------------------
-	printf("----Inside connectRemoteServer\n");
+	unsigned long tid = (unsigned long)pthread_self();
+    printf("[T %lu]           Inside connectRemoteServer\n", tid);
 	int remoteSocket = socket(AF_INET, SOCK_STREAM, 0);
 
 	if( remoteSocket < 0)
@@ -85,14 +86,15 @@ int connectRemoteServer(char* host_addr, int port_num)
 		fprintf(stderr, "Error in connecting to remote server!\n"); 
 		return -1;
 	}
-	printf("----Exit connectRemoteServer\n");
+	printf("[T %lu]           Exit from connectRemoteServer\n", tid);
 	return remoteSocket;
 }
 
 
 int handle_request(int clientSocket, ParsedRequest *request, char *tempReq)
 {
-	printf("Inside handle request method\n");
+	unsigned long tid = (unsigned long)pthread_self();
+    printf("[T %lu]      Inside handle request method\n", tid);
 	char *buf = (char*)malloc(sizeof(char)*MAX_BYTES);
 	strcpy(buf, "GET ");
 	strcat(buf, request->path);
@@ -165,7 +167,7 @@ int handle_request(int clientSocket, ParsedRequest *request, char *tempReq)
 	free(temp_buffer);
 	
  	close(remoteSocketID);
-	printf("Exit from handle request method\n");
+	printf("[T %lu]      Exit from handle request method\n", tid);
 	return 0; // everything is fine 
 }
 
@@ -236,11 +238,12 @@ int sendErrorMessage(int socket, int status_code)
 
 void* thread_fn(void* socketNew)
 {
-	printf("Inside thread\n");
+	unsigned long tid = (unsigned long)pthread_self();
+    printf("[T %lu] Inside Thread\n", tid);
 	sem_wait(&seamaphore); 
 	int p;
 	sem_getvalue(&seamaphore,&p);
-	printf("semaphore value:%d\n",p);
+	printf("[T %lu] semaphore value:%d\n", tid, p);
     int* t= (int*)(socketNew);
 	int socket=*t;           // Socket is socket descriptor of the connected Client
 	int bytes_send_client,len;	  // Bytes Transferred
@@ -292,7 +295,7 @@ void* thread_fn(void* socketNew)
 			}
 			send(socket,response,MAX_BYTES,0);
 		}
-		printf("Data retrived from the Cache\n\n");
+		printf("[T %lu] Data retrieved from cache\n\n", tid);
 		printf("%s\n\n",response);
 	}
 	
@@ -345,7 +348,7 @@ void* thread_fn(void* socketNew)
 	}
 	else if(bytes_send_client == 0)
 	{
-		printf("Client disconnected!\n");
+		printf("[T %lu] Client disconnected\n", tid);
 	}
 
 	shutdown(socket, SHUT_RDWR);
@@ -354,8 +357,8 @@ void* thread_fn(void* socketNew)
 	sem_post(&seamaphore);	
 	
 	sem_getvalue(&seamaphore,&p);
-	printf("Semaphore post value:%d\n",p);
-	printf("Ended thread\n");
+	printf("[T %lu] semaphore post value:%d\n", tid, p);
+	printf("[T %lu] Exit from Thread\n", tid);
 	free(tempReq);
 	return NULL;
 }
@@ -454,47 +457,49 @@ int main(int argc, char * argv[]) {
 }
 
 cache_element* find(char* url){
-	printf("----Inside the cache find\n");
+	unsigned long tid = (unsigned long)pthread_self();
+    printf("[T %lu]      Inside cache find\n", tid);
 	// Checks for url in the cache if found returns pointer to the respective cache element or else returns NULL
 		cache_element* site=NULL;
 		//sem_wait(&cache_lock);
 		int temp_lock_val = pthread_mutex_lock(&lock);
-		printf("--Remove Cache Lock Acquired %d\n",temp_lock_val); 
+		printf("[T %lu]      Remove Cache Lock Acquired %d\n", tid, temp_lock_val); 
 		if(head!=NULL){
 			site = head;
 			while (site!=NULL)
 			{
 				if(!strcmp(site->url,url)){
-					printf("LRU Time Track Before : %ld", site->lru_time_track);
-					printf("\nurl found\n");
+					printf("[T %lu]      LRU Time Track Before : %ld\n", tid, site->lru_time_track);
+					printf("[T %lu]      URL found\n", tid);
 					// Updating the time_track
 					site->lru_time_track = time(NULL);
-					printf("LRU Time Track After : %ld\n", site->lru_time_track);
+					printf("[T %lu]      LRU Time Track After : %ld\n", tid, site->lru_time_track);
 					break;
 				}
 				site=site->next;
 			}      
 		}
 		else {
-		printf("url not found\n");
+			printf("[T %lu]      URL not found\n", tid);
 		}
 		//sem_post(&cache_lock);
 		temp_lock_val = pthread_mutex_unlock(&lock);
-		printf("--Remove Cache Lock Unlocked %d\n",temp_lock_val); 
-		printf("----Exit from cache find\n");
+		printf("[T %lu]      Remove Cache Lock Unlocked %d\n", tid, temp_lock_val);
+		printf("[T %lu]      Exit from cache find\n", tid);
 		return site;
 }
 
 int add_cache_element(char* data,int size,char* url){
 		// Adds element to the cache
-		printf("----Inside the cache add\n");
+		unsigned long tid = (unsigned long)pthread_self();
+		printf("[T %lu]           Inside Add cache\n", tid);
 		int temp_lock_val = pthread_mutex_lock(&lock);
-		printf("--Add Cache Lock Acquired %d\n", temp_lock_val);
+		printf("[T %lu]           Add cache lock acquired %d\n", tid, temp_lock_val);
 		int element_size=size+1+strlen(url)+sizeof(cache_element); // Size of the new element which will be added to the cache
 		if(element_size>MAX_ELEMENT_SIZE){
 			// If element size is greater than MAX_ELEMENT_SIZE we don't add the element to the cache
 			temp_lock_val = pthread_mutex_unlock(&lock);
-			printf("--Add Cache Lock Unlocked %d\n", temp_lock_val);
+			printf("[T %lu]           Add cache lock unlocked %d\n", tid, temp_lock_val);
 		}
 		else
 		{   while(cache_size+element_size>MAX_SIZE){
@@ -512,9 +517,9 @@ int add_cache_element(char* data,int size,char* url){
 			head=element;
 			cache_size+=element_size;
 			temp_lock_val = pthread_mutex_unlock(&lock);
-			printf("--Add Cache Lock Unlocked %d\n", temp_lock_val);
+			printf("[T %lu]           Add cache lock unlocked %d\n", tid, temp_lock_val);
 		}
-		printf("----Exit from cache add\n");
+		printf("[T %lu]           Exit from Add cache\n", tid);
 		return 0;
 	}
 
