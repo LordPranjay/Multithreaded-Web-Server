@@ -97,12 +97,19 @@ Configure your browser or client to use `localhost:8080` as the HTTP proxy.
 ![alt text](image.png)
 ---
 
+## Demo
+<p align="center">
+  <img src="image-2.png" width="200" />
+  <img src="image-1.png" width="200" />
+  <img src="image-3.png" width="200" />
+</p>
+---
+
 ## Troubleshooting & Tips
 
 - **Address already in use**: Ensure no other process is bound to your port, or enable `SO_REUSEADDR` in the code
 - **Cache thrashing**: Adjust `MAX_SIZE` and `MAX_ELEMENT_SIZE` to fit your response sizes
 - This code can be run only in a Linux environment
 - Disable your browser cache before running the code
-
 
 
