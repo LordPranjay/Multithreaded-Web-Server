@@ -79,8 +79,7 @@ Example:
 ```bash
 ./proxy 8080
 ```
-
-Configure your browser or client to use `localhost:8080` as the HTTP proxy.
+Open `http://localhost:port/https://www.cs.princeton.edu/`
 
 ---
 
@@ -99,11 +98,12 @@ Configure your browser or client to use `localhost:8080` as the HTTP proxy.
 
 ## Demo
 <p align="center">
-  <img src="image-2.png" width="200" />
-  <img src="image-1.png" width="200" />
-  <img src="image-3.png" width="200" />
+  <img src="image-2.png" style="height:300px; width:43%;" />
+  <img src="image-1.png" style="height:300px; width:43%;" />
+  <img src="image-3.png" style="height:300px; width:30%;" />
 </p>
----
+
+
 
 ## Troubleshooting & Tips
 
